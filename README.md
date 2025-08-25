@@ -1,202 +1,36 @@
-<edmx:Edmx Version="1.0" xmlns:edmx="http://schemas.microsoft.com/ado/2007/06/edmx" xmlns:sap="http://www.sap.com/Protocols/SAPData">
-    <edmx:DataServices xmlns:m="http://schemas.microsoft.com/ado/2007/08/dataservices/metadata" m:DataServiceVersion="2.0">
-        <Schema xmlns="http://schemas.microsoft.com/ado/2008/09/edm" Namespace="ProjectModel">
-            <EntityType Name="Order">
-                <Key>
-                    <PropertyRef  Name="OrderNum"/>
-                </Key>
-                <Property Name="OrderNum" Type="Edm.String" MaxLength="6" Nullable="false" sap:label="Order Number">
-                </Property>
-                <Property Name="CreateDat" Type="Edm.String" sap:label="Creation Date">
-                </Property>
-                <Property Name="RecPlantID" Type="Edm.String" MaxLength="4" sap:label="Receiving Plant ID">
-                </Property>
-                <Property Name="RecPlantDesc" Type="Edm.String" MaxLength="40" sap:label="Receiving Plant Description">
-                </Property>
-                <Property Name="DelPlantID" Type="Edm.String" MaxLength="4" sap:label="Delivering Plant ID">
-                </Property>
-                <Property Name="DelPlantDesc" Type="Edm.String" MaxLength="40" sap:label="Delivering Plant Description">
-                </Property>
-                <Property Name="Status" Type="Edm.String" Nullable="false" sap:label="Status ">
-                </Property>
-                <NavigationProperty Name="OrderItem" Relationship="ProjectModel.Order_OrderItems" FromRole="Order" ToRole="OrderItem" />
-                <NavigationProperty Name="RecPlant" Relationship="ProjectModel.Order_RecPlants" FromRole="Order" ToRole="RecPlant" />
-                <NavigationProperty Name="DelPlant" Relationship="ProjectModel.Order_DelPlants" FromRole="Order" ToRole="DelPlant" />
-            </EntityType>
-            
-            <EntityType Name="OrderItem">
-                <Key>
-                    <PropertyRef  Name="OrderNum"/>
-                    <PropertyRef  Name="ProductID"/>
-                </Key>
-                <Property Name="OrderNum" Type="Edm.String" MaxLength="6" Nullable="false" sap:label="Order Number">
-                </Property>
-                <Property Name="ProductID" Type="Edm.String" MaxLength="4" sap:label="Product ID">
-                </Property>
-                <Property Name="Quantity" Type="Edm.Int16" Nullable="false" sap:label="Quantity">
-                </Property>
-                <Property Name="DelPlantID" Type="Edm.String" MaxLength="4" sap:label="Delivering Plant ID">
-                </Property>
-                <NavigationProperty Name="Order" Relationship="ProjectModel.Order_OrderItems" FromRole="OrderItem" ToRole="Order" />
-                <NavigationProperty Name="Product" Relationship="ProjectModel.OrderItem_Products" FromRole="OrderItem" ToRole="Product" />
-                <NavigationProperty Name="DelPlant" Relationship="ProjectModel.OrderItem_DelPlants" FromRole="OrderItem" ToRole="DelPlant" />
-            </EntityType>
+_onBtnPressProductDelete: function(){
+            let oTable         = this.byId(Constants.CONTROLS.ProductsTable),
+                aSelectedItems = oTable.getSelectedItems();
 
-            <EntityType Name="Product">
-                <Key>
-                    <PropertyRef  Name="ProductID"/>
-                    <PropertyRef  Name="DelPlantID"/>
-                </Key>
-                <Property Name="ProductID" Type="Edm.String" MaxLength="4" sap:label="Product ID">
-                </Property>
-                <Property Name="ProductName" Type="Edm.String" MaxLength="40" sap:label="Product Name">
-                </Property>
-                <Property Name="UnitPrice" Type="Edm.Decimal" Nullable="false" Precision="10" Scale="2" sap:label="Price">
-                </Property>
-                <Property Name="DelPlantID" Type="Edm.String" MaxLength="4" sap:label="Delivering Plant ID">
-                </Property>
-                <NavigationProperty Name="OrderItem" Relationship="ProjectModel.OrderItem_Products" FromRole="Product" ToRole="OrderItem" />
-                <NavigationProperty Name="DelPlant" Relationship="ProjectModel.Product_DelPlants" FromRole="Product" ToRole="DelPlant" />
-            </EntityType>
-            
-            <EntityType Name="RecPlant">
-                <Key>
-                    <PropertyRef  Name="RecPlantID"/>
-                </Key>
-                <Property Name="RecPlantID" Type="Edm.String" MaxLength="4" sap:label="Receiving Plant ID">
-                </Property>
-                <Property Name="RecPlantDesc" Type="Edm.String" MaxLength="40" sap:label="Receiving Plant Description">
-                </Property>
-                <NavigationProperty Name="Order" Relationship="ProjectModel.Order_RecPlants" FromRole="RecPlant" ToRole="Order" />
-            </EntityType>
-            
-            <EntityType Name="DelPlant">
-                <Key>
-                    <PropertyRef  Name="DelPlantID"/>
-                </Key>
-                <Property Name="DelPlantID" Type="Edm.String" MaxLength="4" sap:label="Delivering Plant ID">
-                </Property>
-                <Property Name="DelPlantDesc" Type="Edm.String" MaxLength="40" sap:label="Delivering Plant Description">
-                </Property>
-                <NavigationProperty Name="Order" Relationship="ProjectModel.Order_DelPlants" FromRole="DelPlant" ToRole="Order" />
-                <NavigationProperty Name="OrderItem" Relationship="ProjectModel.OrderItem_DelPlants" FromRole="DelPlant" ToRole="OrderItem" />
-                <NavigationProperty Name="Product" Relationship="ProjectModel.Product_DelPlants" FromRole="DelPlant" ToRole="Product" />
-            </EntityType>
-            
-            <Association Name="Order_OrderItems">
-                <End Role="Order" Type="ProjectModel.Order" Multiplicity="1" />
-                <End Role="OrderItem" Type="ProjectModel.OrderItem" Multiplicity="*" />
-                <ReferentialConstraint>
-                    <Principal Role="Order">
-                        <PropertyRef Name="OrderNum" />
-                    </Principal>
-                    <Dependent Role="OrderItem">
-                        <PropertyRef Name="OrderNum" />
-                    </Dependent>
-                </ReferentialConstraint>
-            </Association>
+            if (aSelectedItems.length === 0){
+                MessageBox.error(this.getText("error.noSelection"));
+                return;
+            }
 
-            <Association Name="OrderItem_Products">
-                <End Role="OrderItem" Type="ProjectModel.OrderItem" Multiplicity="*" />
-                <End Role="Product" Type="ProjectModel.Product" Multiplicity="1" />
-                <ReferentialConstraint>
-                    <Principal Role="Product">
-                        <PropertyRef Name="ProductID" />
-                    </Principal>
-                    <Dependent Role="OrderItem">
-                        <PropertyRef Name="ProductID" />
-                    </Dependent>
-                </ReferentialConstraint>
-            </Association>
+            const sConfirmMsg       = this.getText("confirm.deleteItems", [aSelectedItems.length]),
+                  sSuccessDeleteMsg = this.getText("info.successDelete"),
+                  sfailedDeleteMsg  = this.getText("error.failedDelete");
 
-            <Association Name="OrderItem_DelPlants">
-                <End Role="DelPlant" Type="ProjectModel.DelPlant" Multiplicity="1" />
-                <End Role="OrderItem" Type="ProjectModel.OrderItem" Multiplicity="*" />
-                <ReferentialConstraint>
-                    <Principal Role="DelPlant">
-                        <PropertyRef Name="DelPlantID" />
-                    </Principal>
-                    <Dependent Role="OrderItem">
-                        <PropertyRef Name="DelPlantID" />
-                    </Dependent>
-                </ReferentialConstraint>
-            </Association>
+            MessageBox.confirm(sConfirmMsg, {
+                actions: [MessageBox.Action.YES, MessageBox.Action.NO],
+                onClose: function (sAction){
+                    if (sAction === MessageBox.Action.YES){
+                        let oModel = this.getModel();
 
-            <Association Name="Product_DelPlants">
-                <End Role="Product" Type="ProjectModel.Product" Multiplicity="*" />
-                <End Role="DelPlant" Type="ProjectModel.DelPlant" Multiplicity="1" />
-                <ReferentialConstraint>
-                    <Principal Role="DelPlant">
-                        <PropertyRef Name="DelPlantID" />
-                    </Principal>
-                    <Dependent Role="Product">
-                        <PropertyRef Name="DelPlantID" />
-                    </Dependent>
-                </ReferentialConstraint>
-            </Association>
-            
-            <Association Name="Order_RecPlants">
-                <End Role="RecPlant" Type="ProjectModel.RecPlant" Multiplicity="1" />
-                <End Role="Order" Type="ProjectModel.Order" Multiplicity="*" />
-                <ReferentialConstraint>
-                    <Principal Role="RecPlant">
-                        <PropertyRef Name="RecPlantID" />
-                    </Principal>
-                    <Dependent Role="Order">
-                        <PropertyRef Name="RecPlantID" />
-                    </Dependent>
-                </ReferentialConstraint>
-            </Association>
-            
-            <Association Name="Order_DelPlants">
-                <End Role="DelPlant" Type="ProjectModel.DelPlant" Multiplicity="1" />
-                <End Role="Order" Type="ProjectModel.Order" Multiplicity="*" />
-                <ReferentialConstraint>
-                    <Principal Role="DelPlant">
-                        <PropertyRef Name="DelPlantID" />
-                    </Principal>
-                    <Dependent Role="Order">
-                        <PropertyRef Name="DelPlantID" />
-                    </Dependent>
-                </ReferentialConstraint>
-            </Association>
-            
-            <EntityContainer Name="ProjectEntities" m:IsDefaultEntityContainer="true">
-                
-                <EntitySet Name="Orders" EntityType="ProjectModel.Order" />
-                <EntitySet Name="OrderItems" EntityType="ProjectModel.OrderItem" />
-                <EntitySet Name="Products" EntityType="ProjectModel.Product" />
-                <EntitySet Name="RecPlants" EntityType="ProjectModel.RecPlant" />
-                <EntitySet Name="DelPlants" EntityType="ProjectModel.DelPlant" />
-                
-                <AssociationSet Name="OrderOrderItems" Association="ProjectModel.Order_OrderItems">
-                    <End Role="Order" EntitySet="Orders" />
-                    <End Role="OrderItem" EntitySet="OrderItems" />
-                </AssociationSet>
-                <AssociationSet Name="OrderItemProducts" Association="ProjectModel.OrderItem_Products">
-                    <End Role="OrderItem" EntitySet="OrderItems" />
-                    <End Role="Product" EntitySet="Products" />
-                </AssociationSet>
-                <AssociationSet Name="OrderItemDelPlants" Association="ProjectModel.OrderItem_DelPlants">
-                    <End Role="OrderItem" EntitySet="OrderItems" />
-                    <End Role="DelPlant" EntitySet="DelPlants" />
-                </AssociationSet>
-                <AssociationSet Name="ProductDelPlants" Association="ProjectModel.Product_DelPlants">
-                    <End Role="Product" EntitySet="Products"/>
-                    <End Role="DelPlant" EntitySet="DelPlants" />
-                </AssociationSet>
-                <AssociationSet Name="OrderRecPlants" Association="ProjectModel.Order_RecPlants">
-                    <End Role="Order" EntitySet="Orders" />
-                    <End Role="RecPlant" EntitySet="RecPlants"/>
-                </AssociationSet>
-                <AssociationSet Name="OrderDelPlants" Association="ProjectModel.Order_DelPlants">
-                    <End Role="Order" EntitySet="Orders" />
-                    <End Role="DelPlant" EntitySet="DelPlants"/>
-                </AssociationSet>
-                
-            </EntityContainer>
-            
-            
-        </Schema>
-    </edmx:DataServices>
-</edmx:Edmx>
+                        aSelectedItems.forEach(function (oItem){
+                            let sPath = oItem.getBindingContext().getPath();
+
+                            oModel.remove(sPath, {
+                                success: function(){
+                                    sap.m.MessageToast.show(sSuccessDeleteMsg);
+                                    oModel.refresh(true);
+                                },
+                                error: function(){
+                                    MessageBox.error(sfailedDeleteMsg);
+                                }
+                            });
+                        });
+                    }
+                }.bind(this)
+            });
+        },
