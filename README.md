@@ -11,11 +11,15 @@
                 </Property>
                 <Property Name="RecPlantID" Type="Edm.String" MaxLength="4" sap:label="Receiving Plant ID">
                 </Property>
+                <Property Name="RecPlantDesc" Type="Edm.String" MaxLength="40" sap:label="Receiving Plant Description">
+                </Property>
                 <Property Name="DelPlantID" Type="Edm.String" MaxLength="4" sap:label="Delivering Plant ID">
+                </Property>
+                <Property Name="DelPlantDesc" Type="Edm.String" MaxLength="40" sap:label="Delivering Plant Description">
                 </Property>
                 <Property Name="Status" Type="Edm.String" Nullable="false" sap:label="Status ">
                 </Property>
-                <NavigationProperty Name="OrderItems" Relationship="ProjectModel.Order_OrderItems" FromRole="Order" ToRole="OrderItem" />
+                <NavigationProperty Name="OrderItem" Relationship="ProjectModel.Order_OrderItems" FromRole="Order" ToRole="OrderItem" />
                 <NavigationProperty Name="RecPlant" Relationship="ProjectModel.Order_RecPlants" FromRole="Order" ToRole="RecPlant" />
                 <NavigationProperty Name="DelPlant" Relationship="ProjectModel.Order_DelPlants" FromRole="Order" ToRole="DelPlant" />
             </EntityType>
@@ -31,8 +35,11 @@
                 </Property>
                 <Property Name="Quantity" Type="Edm.Int16" Nullable="false" sap:label="Quantity">
                 </Property>
+                <Property Name="DelPlantID" Type="Edm.String" MaxLength="4" sap:label="Delivering Plant ID">
+                </Property>
                 <NavigationProperty Name="Order" Relationship="ProjectModel.Order_OrderItems" FromRole="OrderItem" ToRole="Order" />
                 <NavigationProperty Name="Product" Relationship="ProjectModel.OrderItem_Products" FromRole="OrderItem" ToRole="Product" />
+                <NavigationProperty Name="DelPlant" Relationship="ProjectModel.OrderItem_DelPlants" FromRole="OrderItem" ToRole="DelPlant" />
             </EntityType>
 
             <EntityType Name="Product">
@@ -48,7 +55,7 @@
                 </Property>
                 <Property Name="DelPlantID" Type="Edm.String" MaxLength="4" sap:label="Delivering Plant ID">
                 </Property>
-                <NavigationProperty Name="OrderItems" Relationship="ProjectModel.OrderItem_Products" FromRole="Product" ToRole="OrderItem" />
+                <NavigationProperty Name="OrderItem" Relationship="ProjectModel.OrderItem_Products" FromRole="Product" ToRole="OrderItem" />
                 <NavigationProperty Name="DelPlant" Relationship="ProjectModel.Product_DelPlants" FromRole="Product" ToRole="DelPlant" />
             </EntityType>
             
@@ -72,6 +79,8 @@
                 <Property Name="DelPlantDesc" Type="Edm.String" MaxLength="40" sap:label="Delivering Plant Description">
                 </Property>
                 <NavigationProperty Name="Order" Relationship="ProjectModel.Order_DelPlants" FromRole="DelPlant" ToRole="Order" />
+                <NavigationProperty Name="OrderItem" Relationship="ProjectModel.OrderItem_DelPlants" FromRole="DelPlant" ToRole="OrderItem" />
+                <NavigationProperty Name="Product" Relationship="ProjectModel.Product_DelPlants" FromRole="DelPlant" ToRole="Product" />
             </EntityType>
             
             <Association Name="Order_OrderItems">
@@ -96,6 +105,19 @@
                     </Principal>
                     <Dependent Role="OrderItem">
                         <PropertyRef Name="ProductID" />
+                    </Dependent>
+                </ReferentialConstraint>
+            </Association>
+
+            <Association Name="OrderItem_DelPlants">
+                <End Role="DelPlant" Type="ProjectModel.DelPlant" Multiplicity="1" />
+                <End Role="OrderItem" Type="ProjectModel.OrderItem" Multiplicity="*" />
+                <ReferentialConstraint>
+                    <Principal Role="DelPlant">
+                        <PropertyRef Name="DelPlantID" />
+                    </Principal>
+                    <Dependent Role="OrderItem">
+                        <PropertyRef Name="DelPlantID" />
                     </Dependent>
                 </ReferentialConstraint>
             </Association>
@@ -154,6 +176,10 @@
                 <AssociationSet Name="OrderItemProducts" Association="ProjectModel.OrderItem_Products">
                     <End Role="OrderItem" EntitySet="OrderItems" />
                     <End Role="Product" EntitySet="Products" />
+                </AssociationSet>
+                <AssociationSet Name="OrderItemDelPlants" Association="ProjectModel.OrderItem_DelPlants">
+                    <End Role="OrderItem" EntitySet="OrderItems" />
+                    <End Role="DelPlant" EntitySet="DelPlants" />
                 </AssociationSet>
                 <AssociationSet Name="ProductDelPlants" Association="ProjectModel.Product_DelPlants">
                     <End Role="Product" EntitySet="Products"/>
