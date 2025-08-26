@@ -1,25 +1,29 @@
-_onBtnPressProductDelete: function(){
-            let oTable         = this.byId(Constants.CONTROLS.ProductsTable),
-                aSelectedItems = oTable.getSelectedItems(),
-                oModel         = this.getModel(),
-                sPath          = this.getView().getBindingContext().getPath();
+const _this = this;
+
+            const oModel = this.getModel(),
+                  sPath  = this.getView().getBindingContext().getPath();
+
+            let aSelectedItems = oEvent.getParameter(Constants.PARAM.SelectedContexts);
 
             if (aSelectedItems.length === 0){
-                MessageBox.error(this.getText("error.noSelection"));
+                MessageBox.information(this.getText("info.noItemSelected"));
                 return;
             }
 
-            const sConfirmMsg = this.getText("confirm.deleteItems", [aSelectedItems.length]);
+            aSelectedItems.forEach(function (oContext){
+                const sProductAddedMsg = _this.getText("info.productAdded", oContext.getObject().ProductID);
 
-            MessageBox.confirm(sConfirmMsg, {
-                actions: [MessageBox.Action.YES, MessageBox.Action.NO],
-                onClose: function (sAction){
-                    if (sAction === MessageBox.Action.YES){
-                        // Remove selected items from UI only
-                        aSelectedItems.forEach(function (oItem){
-                            oModel.remove(sPath + `/${Constants.ENTITY.OrderItem}`, oItem);
-                        });
+                let iQty = oContext.getObject().SelectedQuantity || 1;
+
+                let oNewItem = {
+                    OrderNum: oContext.getObject().OrderNum,
+                    ProductID: oContext.getObject().ProductID,
+                    Quantity: iQty
+                };
+
+                oModel.create(sPath + `/${Constants.ENTITY.OrderItem}`, oNewItem, {
+                    success: function(){
+                        sap.m.MessageToast.show(sProductAddedMsg);
                     }
-                }.bind(this)
+                });
             });
-        },
