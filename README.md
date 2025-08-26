@@ -1,34 +1,23 @@
 _onBtnPressProductDelete: function(){
             let oTable         = this.byId(Constants.CONTROLS.ProductsTable),
-                aSelectedItems = oTable.getSelectedItems();
+                aSelectedItems = oTable.getSelectedItems(),
+                oModel         = this.getModel(),
+                sPath          = this.getView().getBindingContext().getPath();
 
             if (aSelectedItems.length === 0){
                 MessageBox.error(this.getText("error.noSelection"));
                 return;
             }
 
-            const sConfirmMsg       = this.getText("confirm.deleteItems", [aSelectedItems.length]),
-                  sSuccessDeleteMsg = this.getText("info.successDelete"),
-                  sfailedDeleteMsg  = this.getText("error.failedDelete");
+            const sConfirmMsg = this.getText("confirm.deleteItems", [aSelectedItems.length]);
 
             MessageBox.confirm(sConfirmMsg, {
                 actions: [MessageBox.Action.YES, MessageBox.Action.NO],
                 onClose: function (sAction){
                     if (sAction === MessageBox.Action.YES){
-                        let oModel = this.getModel();
-
+                        // Remove selected items from UI only
                         aSelectedItems.forEach(function (oItem){
-                            let sPath = oItem.getBindingContext().getPath();
-
-                            oModel.remove(sPath, {
-                                success: function(){
-                                    sap.m.MessageToast.show(sSuccessDeleteMsg);
-                                    oModel.refresh(true);
-                                },
-                                error: function(){
-                                    MessageBox.error(sfailedDeleteMsg);
-                                }
-                            });
+                            oModel.remove(sPath + `/${Constants.ENTITY.OrderItem}`, oItem);
                         });
                     }
                 }.bind(this)
